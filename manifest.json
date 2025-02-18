@@ -1,0 +1,19 @@
+{
+    "manifest_version": 2,
+    "name": "Remove Google AI Overview",
+    "version": "1.1",
+  
+    "description": "Removes the AI overview on Google.com",
+  
+    "icons": {
+      "48": "icons/remove.png"
+    },
+  
+    "content_scripts": [
+      {
+        "matches": ["*://*.google.com/*"],
+        "js": ["remove.js"]
+      }
+    ]
+  }
+  
