@@ -11,28 +11,52 @@ const AI_OVERVIEW_MATCHES = [
     'generating'
 ]
 
-// Wait for 500 ms to allow the AI Overview to load
-setTimeout(() => {
-    // The title is in a <strong> which happens to be the first <strong> in the page
-    // Change this to a more viable method ?
-    let mx_body = document.getElementsByTagName('strong');
+const returnMatch = (mx_body) => {
+    return AI_OVERVIEW_MATCHES.some((word) => word.includes(mx_body[0].innerText.toLowerCase()));
+}
 
-    // Return matches from the array
-    const returnMatch = () => {
-        return AI_OVERVIEW_MATCHES.some((word) => word.includes(mx_body[0].innerText.toLowerCase()));
-    }
-
-    // If we have a match, remove the 8th parent 
-    // Also subject to change depending on how Google decides to change it
-    if(mx_body.length > 0 && returnMatch()){
-        let parent = mx_body[0].parentNode
-        let i = 0;
-        let currentNode = parent;
-        while(i <9){
-            currentNode = currentNode.parentNode;
-            i++;
+const removeOverview = (mx_body) => {
+    return new Promise((resolve, reject) => {
+        if(mx_body && mx_body[0] && returnMatch(mx_body)){
+            let parent = mx_body[0].parentNode;
+            let i = 0;
+            let currentNode = parent;
+            while(i <9){
+                currentNode = currentNode.parentNode;
+                i++;
+            }
+            currentNode.outerHTML = ""
+            resolve(true)
         }
-        currentNode.outerHTML = ""
+        else{
+            reject(false)
+        }
+
+    })
+}
+
+const retryFunc = async (attempts, maxAttempts=50) => {
+    let delay = 500;
+    await wait(delay);
+    let mx_body = document.getElementsByTagName('strong');
+    if(maxAttempts !== attempts){
+        delay = delay + 100;
     }
-    
-}, 500);
+    try{
+        return await removeOverview(mx_body)
+    }
+    catch(e){
+        if(attempts == maxAttempts){
+            return false
+        }
+        retryFunc(attempts+1)
+    }
+}
+
+const wait = ms => new Promise(r => setTimeout(r, ms));
+
+const mainFunc = async () => {
+    await retryFunc(0);
+}
+
+mainFunc();
