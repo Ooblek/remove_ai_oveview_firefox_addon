@@ -11,9 +11,24 @@ const AI_OVERVIEW_MATCHES = [
     'generating'
 ]
 
+const PEOPLE_ALSO_ASK = 'people also ask';
+
 const returnMatch = (mx_body) => {
+    if(mx_body.length == 0){
+        return null
+    }
     return AI_OVERVIEW_MATCHES.some((word) => word.includes(mx_body[0].innerText.toLowerCase()));
 }
+
+let muO = new MutationObserver((list, _o) => {
+    if(list[0].addedNodes.length !== 0 && !list[0].addedNodes[0].getAttribute('style')){
+        for(item of list){ 
+            if( item.addedNodes.length > 0 && item.addedNodes[0].nodeName == "DIV" && item.addedNodes[0].getElementsByTagName('strong').length > 0){
+                item.addedNodes[0].innerHTML = ""
+            }
+        }
+    }
+})
 
 const removeOverview = (mx_body) => {
     return new Promise((resolve, reject) => {
@@ -55,8 +70,24 @@ const retryFunc = async (attempts, maxAttempts=50) => {
 
 const wait = ms => new Promise(r => setTimeout(r, ms));
 
-const mainFunc = async () => {
+const findPeopleAlsoAsk = () => {
+    let spans = document.getElementsByTagName('span');
+    if(spans && spans.length > 0){
+        for(item of spans){
+            if(item.innerText && item.innerText.toLowerCase() == PEOPLE_ALSO_ASK)
+                return item
+        }
+        
+    }
+}
+
+const main = async () => {
+    let paaSpan = findPeopleAlsoAsk();
+    if(paaSpan){
+        let fullDiv= paaSpan.parentNode.parentNode.parentNode.parentNode;
+        muO.observe(fullDiv.children[1], {childList: true})
+    }
     await retryFunc(0);
 }
 
-mainFunc();
+main();
