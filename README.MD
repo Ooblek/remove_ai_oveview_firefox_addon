@@ -4,8 +4,6 @@
    href="https://www.mozilla.org/firefox/this-browser-comes-highly-recommended/?utm_source=devs-for.firefox.com&utm_medium=referral&utm_campaign=devs-for-firefox&utm_content=Developers_For_Firefox_Light">
   <img style="border:0 none; width:100px;"
        alt="Developers for Firefox"
-       srcset="//code.cdn.mozilla.net/for-firefox/badges/assets/Developers_For_Firefox_Light.png,
-               //code.cdn.mozilla.net/for-firefox/badges/assets/Developers_For_Firefox_Light-2x.png 2x"
        src="//code.cdn.mozilla.net/for-firefox/badges/assets/Developers_For_Firefox_Light.png">
 </a>
 
