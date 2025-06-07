@@ -72,7 +72,8 @@ const overViewCall = async () => {
         return await removeOverview(mx_body)
     }
     catch(e){
-        logError(`FAILED TO REMOVE THE AI OVERVIEW: ${e}`)
+        logError(`FAILED TO REMOVE THE AI OVERVIEW. HAS IT ALREADY BEEN REMOVED?: ${e}`);
+        return false;
     }
 }
 
