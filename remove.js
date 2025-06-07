@@ -67,8 +67,13 @@ const removeOverview = (mx_body) => {
 
 
 const overViewCall = async () => {
-    let mx_body = document.getElementsByTagName('strong');
-    return await removeOverview(mx_body)
+    try{
+        let mx_body = document.getElementsByTagName('strong');
+        return await removeOverview(mx_body)
+    }
+    catch(e){
+        logError(`FAILED TO REMOVE THE AI OVERVIEW: ${e}`)
+    }
 }
 
 const genericRetryFunction = async (attempts, maxAttempts=50, callback) => {
@@ -83,6 +88,7 @@ const genericRetryFunction = async (attempts, maxAttempts=50, callback) => {
 
     }
     catch(e){
+        logError(e)
         if(attempts == maxAttempts){
             return false;
         }
@@ -145,13 +151,16 @@ const logError = (e) => {
 }
 
 const main = async () => {
-    try{
-        await genericRetryFunction(0, 50, overViewCall);
-        await genericRetryFunction(0,50, removePeopleAlsoAskMatches);
-    }
-    catch(e){
-        logError(e)
-    }
+    // To avoid page load issues. Google overrides all load events
+    setTimeout(async () => {
+        try{
+            await genericRetryFunction(0, 50, overViewCall);
+            await genericRetryFunction(0,50, removePeopleAlsoAskMatches);
+        }
+        catch(e){
+            logError(e)
+        }
+    }, GENERIC_WAIT_DELAY*2)
 }
 
 main();
