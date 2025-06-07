@@ -20,6 +20,10 @@ const PEOPLE_ALSO_ASK = [
     'பிறர் இவற்றையும் கேட்டுள்ளனர்'    
 ];
 
+const SEARCH_DIV_ID ='search';
+const GENERIC_WAIT_DELAY = 200
+
+
 const returnMatch = (mx_body) => {
     if(mx_body.length == 0){
         return null
@@ -61,45 +65,93 @@ const removeOverview = (mx_body) => {
     })
 }
 
-const retryFunc = async (attempts, maxAttempts=50) => {
-    let delay = 500;
-    await wait(delay);
+
+const overViewCall = async () => {
     let mx_body = document.getElementsByTagName('strong');
-    if(maxAttempts !== attempts){
-        delay = delay + 100;
-    }
+    return await removeOverview(mx_body)
+}
+
+const genericRetryFunction = async (attempts, maxAttempts=50, callback) => {
+    await wait(GENERIC_WAIT_DELAY);
     try{
-        return await removeOverview(mx_body)
+        if(attempts !== maxAttempts){
+            if(callback()){
+                return true
+            }
+            return genericRetryFunction(attempts + 1, maxAttempts, callback)
+        }   
+
     }
     catch(e){
         if(attempts == maxAttempts){
-            return false
+            return false;
         }
-        retryFunc(attempts+1)
+        return genericRetryFunction(attempts + 1, maxAttempts, callback);
     }
+
+
 }
 
 const wait = ms => new Promise(r => setTimeout(r, ms));
 
 const findPeopleAlsoAsk = () => {
-    let spans = document.getElementsByTagName('span');
-    if(spans && spans.length > 0){
-        for(item of spans){
-            if(item.innerText && returnPAAMatch(item)){
-                return item;
+    try{
+        let spans = document.getElementById(SEARCH_DIV_ID).getElementsByTagName('span');
+        if(spans && spans.length > 0){
+            for(item of spans){
+                if(item.innerText && returnPAAMatch(item)){
+                    return item;
+                }
             }
         }
-        
+    }
+    catch(e){
+        logError(e)
+        return null
+    }
+
+    return null
+}
+
+const removePeopleAlsoAskMatches = () => {
+    let paaSpan = findPeopleAlsoAsk();
+    try{
+        let fullDiv= paaSpan.parentNode.parentNode.parentNode;
+
+        // WILL PROBABLY BREAK IN THE FUTURE. NEED A BETTER WAY TO FIND THE ACCORDIONS. MAYBE TRACK THE SPRX-BUGFIX COMPONENT?
+        let accordionDiv = fullDiv.children[1].children[1]
+        if(accordionDiv){
+            let aiOverviewDivs = accordionDiv.getElementsByTagName('strong');
+            if(aiOverviewDivs){
+                for(let t of aiOverviewDivs){
+                    // EXTREMELY STUPID WAY OF DOING THIS
+                    t.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode.outerHTML = ""
+                }
+                muO.observe(accordionDiv, {childList: true})
+                return true
+            }
+        }
+        return false
+
+    }
+    catch(e){
+        logError(e);
+        return false
     }
 }
 
+const logError = (e) => {
+    console.error(`remove-google-ai-overview-error: ${e}`)
+}
+
 const main = async () => {
-    let paaSpan = findPeopleAlsoAsk();
-    if(paaSpan){
-        let fullDiv= paaSpan.parentNode.parentNode.parentNode.parentNode;
-        muO.observe(fullDiv.children[1], {childList: true})
+    try{
+        await genericRetryFunction(0, 50, overViewCall);
+        await genericRetryFunction(0,50, removePeopleAlsoAskMatches);
     }
-    await retryFunc(0);
+    catch(e){
+        logError(e)
+    }
 }
 
 main();
