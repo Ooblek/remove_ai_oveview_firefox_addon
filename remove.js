@@ -8,7 +8,8 @@ const AI_OVERVIEW_MATCHES = [
     'ai による概要',
     'ai பதில்',
     'searching',
-    'generating'
+    'generating',
+    "ai 概览",
 ]
 
 const PEOPLE_ALSO_ASK = [
